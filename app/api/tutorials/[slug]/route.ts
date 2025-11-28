@@ -4,9 +4,9 @@ import { Tutorial } from "@/models/Tutorial";
 
 export async function GET(
   req: NextRequest,
-  context: { params: { slug: string } }
+  context: { params: Promise<{ slug: string }> }
 ) {
-  const { slug } = context.params;
+  const { slug } = await context.params;
 
   await connectDB();
   const tutorial = await Tutorial.findOne({ slug }).lean();
@@ -20,9 +20,9 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  context: { params: { slug: string } }
+  context: { params: Promise<{ slug: string }> }
 ) {
-  const { slug } = context.params;
+  const { slug } = await context.params;
 
   const adminToken = req.headers.get("x-admin-token");
   if (adminToken !== process.env.ADMIN_TOKEN) {
@@ -35,10 +35,6 @@ export async function PATCH(
   const updated = await Tutorial.findOneAndUpdate({ slug }, body, {
     new: true,
   }).lean();
-
-  if (!updated) {
-    return new NextResponse("Not found", { status: 404 });
-  }
 
   return NextResponse.json(updated);
 }
